@@ -1,5 +1,4 @@
 const services = require("../models/contacts.js");
-const { schema } = require("./validation.js");
 
 const getContacts = async (req, res, next) => {
   const contacts = await services.listContacts();
@@ -11,8 +10,7 @@ const getContactById = async (req, res, next) => {
     const { contactId } = req.params;
     const contact = await services.getContactById(contactId);
     if (!contact) return res.status(404).json({ message: "Not found" });
-        
-    
+
     res.send(contact);
   } catch (error) {
     next(error);
@@ -21,14 +19,6 @@ const getContactById = async (req, res, next) => {
 
 const addContact = async (req, res, next) => {
   try {
-    const body = Object.keys(req.body).length;
-    const { error } = schema.validate(req.body);
-
-    if (error)
-      return res.status(400).json({ message: error.details[0].message });
-    if (body !== 3)
-      return res.status(400).json({ message: "missing required name field" });
-
     const newContact = await services.addContact(req.body);
 
     return res.status(201).json(newContact);
@@ -52,14 +42,8 @@ const deleteContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   try {
-    const body = Object.keys(req.body).length;
     const { contactId } = req.params;
-    const { error } = schema.validate(req.body);
 
-    if (error)
-      return res.status(400).json({ message: error.details[0].message });
-
-    if (body === 0) return res.status(400).json({ message: "missing fields" });
     const updateContact = await services.updateContact(contactId, req.body);
 
     if (!updateContact)
