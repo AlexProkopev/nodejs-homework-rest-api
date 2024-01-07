@@ -55,15 +55,13 @@ const updateContact = async (req, res, next) => {
   }
 };
 
-const errorHandler = (err, req, res, next) => {
-  res.status(500).json({ message: err.status });
-};
+
 
 module.exports = {
   getContacts,
   getContactById,
   addContact,
   deleteContact,
-  updateContact,
-  errorHandler,
+  updateContact
+
 };
