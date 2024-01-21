@@ -13,4 +13,8 @@ const schemaUpdate = Joi.object({
   phone:  Joi.string().min(10).max(15),
 });
 
-module.exports = {schema,schemaUpdate}
+const schemaUpdateStatus = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
+module.exports = {schema,schemaUpdate,schemaUpdateStatus}
