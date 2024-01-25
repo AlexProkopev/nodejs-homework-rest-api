@@ -1,12 +1,14 @@
 const Contacts = require("../models/contactsSchema.js");
 
 const getContacts = async (req, res, next) => {
-  const contacts = await Contacts.find();
+  const {_id: owner} = req.user;
+  const contacts = await Contacts.find({owner},"-createAt -updatedAt");
   res.status(200).json(contacts);
 };
 
 const getContactById = async (req, res, next) => {
   try {
+   
     const { contactId } = req.params;
     const contact = await Contacts.findById(contactId);
     if (!contact) return res.status(404).json({ message: "Not found" });
@@ -18,7 +20,8 @@ const getContactById = async (req, res, next) => {
 
 const addContact = async (req, res, next) => {
   try {
-    const newContact = await Contacts.create(req.body);
+    const {_id: owner} = req.user;
+    const newContact = await Contacts.create({...req.body, owner});
     return res.status(201).json(newContact);
   } catch (error) {
     next(error);
