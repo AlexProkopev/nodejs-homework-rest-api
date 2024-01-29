@@ -2,6 +2,9 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { User } = require("../models/users");
 const { SECRET_KEY } = process.env;
+const path = require("path");
+const fs = require("fs/promises");
+const Jimp = require("jimp");
 
 const validateBody = (schema) => (req, res, next) => {
   const body = Object.keys(req.body).length;
@@ -61,9 +64,33 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+const avatarsDir = path.join(__dirname, "../", "public", "avatars");
+
+const uploadAvatar = async (req, res, next) => {
+  const { _id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const filename = `${_id}@${originalname}`
+  try {
+    const resultUpload = path.join(avatarsDir, filename);
+    
+    const img = await Jimp.read(tempUpload);
+    await img.resize(250, 250).writeAsync(tempUpload);
+  
+    await fs.rename(tempUpload, resultUpload);
+    const avatarResponse = path.join("avatars", filename);
+    await User.findByIdAndUpdate(_id, { avatarUrl: avatarResponse });
+
+    
+    res.status(200).json({ message: avatarResponse });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   validateBody,
   validateBodyUpdate,
   validateBodyUpdateStatus,
   authenticate,
+  uploadAvatar,
 };
