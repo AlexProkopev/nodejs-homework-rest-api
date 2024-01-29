@@ -8,12 +8,18 @@ const jwt = require("jsonwebtoken");
 const regist = async (req, res, next) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-  if (user) return res.status(409).json({ message: "User already exists" });
   try {
+    const user = await User.findOne({ email });
+    if (user) return res.status(409).json({ message: "User already exists" });
     const hashPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ ...req.body, password: hashPassword });
-    const response = { email: user.email, subscription: user.subscription };
+    const userCreate = await User.create({
+      ...req.body,
+      password: hashPassword,
+    });
+    const response = {
+      email: userCreate.email,
+      subscription: userCreate.subscription,
+    };
     res.status(201).json(response);
   } catch (error) {
     handleErroreAuth(error, req, res, next);
@@ -23,8 +29,8 @@ const regist = async (req, res, next) => {
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
   try {
+    const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -63,7 +69,6 @@ const currentUser = async (req, res, next) => {
     res.status(401).json({ message: "Not authorized" });
     next();
   }
-  
 };
 
 const logOut = async (req, res, next) => {

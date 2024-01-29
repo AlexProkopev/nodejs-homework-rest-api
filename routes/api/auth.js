@@ -4,9 +4,9 @@ const { validateBody, authenticate } = require("../../services/middleware.js");
 const { schemas } = require("../../services/validationUser.js");
 const { regist, login, logOut } = require("../../services/auth.js");
 
-router.post("/users/register", validateBody(schemas.registSchema), regist);
-router.post("/users/login", validateBody(schemas.loginSchema), login);
-router.post("/users/current",authenticate,validateBody(schemas.loginSchema),login);
-router.post("/users/logout",authenticate,logOut);
+router.post("/auth/register", validateBody(schemas.registSchema), regist);
+router.post("/auth/login", validateBody(schemas.loginSchema), login);
+router.get("/current",authenticate,login);
+router.post("/auth/logout",authenticate,logOut);
 
 module.exports = router;
