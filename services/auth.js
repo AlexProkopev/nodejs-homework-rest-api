@@ -55,9 +55,7 @@ const login = async (req, res, next) => {
   } catch (error) {
     next();
   }
-};
-
-// Текущий юзер
+}; 
 
 
 const logOut = async (req, res, next) => {
@@ -70,4 +68,19 @@ const logOut = async (req, res, next) => {
     next();
   }
 };
-module.exports = { regist, login, logOut };
+
+const currentUser = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const response = {
+      email: user.email,
+      subscription: user.subscription,
+    };
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(401).json({ message: "Not authorized" });
+    next();
+  }
+
+};
+module.exports = { regist, login, logOut, currentUser };
