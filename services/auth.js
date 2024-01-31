@@ -65,7 +65,7 @@ const logOut = async (req, res, next) => {
     res.status(204).json();
   } catch (error) {
     res.status(401).json({ message: "Not authorized" });
-    next();
+    
   }
 };
 
@@ -79,7 +79,7 @@ const currentUser = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     res.status(401).json({ message: "Not authorized" });
-    next();
+    
   }
 
 };
