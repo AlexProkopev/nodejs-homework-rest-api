@@ -6,7 +6,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const regist = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { name, email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
@@ -14,6 +14,7 @@ const regist = async (req, res, next) => {
     const hashPassword = await bcrypt.hash(password, 10);
     const userCreate = await User.create({
       ...req.body,
+      name,
       password: hashPassword,
     });
     const response = {
@@ -51,7 +52,7 @@ const login = async (req, res, next) => {
     };
     res.status(200).json(response);
   } catch (error) {
-    next();
+    res.status(401).json({ message: "Not authorized" });
   }
 };
 
@@ -67,7 +68,7 @@ const currentUser = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     res.status(401).json({ message: "Not authorized" });
-    next();
+    
   }
 };
 
@@ -78,7 +79,7 @@ const logOut = async (req, res, next) => {
     res.status(204).json();
   } catch (error) {
     res.status(401).json({ message: "Not authorized" });
-    next();
+    
   }
 };
 module.exports = { regist, login, currentUser, logOut };
