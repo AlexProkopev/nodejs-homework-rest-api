@@ -48,14 +48,14 @@ const verefyEmail = async (req, res, next) => {
     const user = await User.findOne({ verificationCode });
     if (!user)
       return res
-        .status(401)
-        .json({ message: "Verification code is not valid" });
+        .status(404)
+        .json({ message: "User not found" });
 
     await User.findByIdAndUpdate(user._id, {
       verify: true,
       verificationToken: "",
     });
-    res.status(401).json({ message: "Verification code is valid" });
+    res.status(404).json({ message: "Verification code is valid" });
   } catch (error) {
     res.status(401).json({ message: "Not Verification" });
   }
@@ -67,20 +67,24 @@ const resendVerefyEmail = async (req, res, next) => {
   try {
     const user = await User.findOne({ email });
 
-    if (!user) return res.status(401).json({ message: "User not found" });
+    if (!user) return res.status(400).json({ message: "Email not found" });
     if (user.verify)
-      return res.status(401).json({ message: "User already verified" });
+      return res.status(400).json({ message: "Verification has already been passed" });
     const verificationToken = generateNanoId();
 
     const verefyEmail = {
       to: email,
-      subject: "Verefy email",
+      subject: "Verify email",
       html: `<a target="" href="${process.env.BASE_URl}/api/users/verify/${verificationToken}">Click verefy email</a>`,
     };
 
+    await User.findByIdAndUpdate(user._id, {
+      verificationToken,
+    });
+
     await sendEmail(verefyEmail);
 
-    res.status(201).json({ message: "Verefy email sent" });
+    res.status(201).json({ message: "Verify email sent" });
   } catch (error) {
     res.status(401).json({ message: "Not authorized" });
   }
@@ -95,7 +99,7 @@ const login = async (req, res, next) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res.status(401).json({ message: "Password not corect" });
+      return res.status(401).json({ message: "Password not correct" });
 
     if (!user.verify)
       return res.status(401).json({ message: "User not verified" });
