@@ -11,9 +11,14 @@ const loginSchema = Joi.object({
     password: Joi.string().min(6).max(15).required(),
 })
 
+const schemaEmail = Joi.object({
+    email: Joi.string().email().required(),
+  })
+
 const schemas= {
     registSchema,
-    loginSchema
+    loginSchema,
+    schemaEmail
 }
 
 module.exports = {schemas}

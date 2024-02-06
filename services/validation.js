@@ -7,6 +7,8 @@ const schema = Joi.object({
   phone:  Joi.string().min(10).max(15).required(),
 });
 
+
+
 const schemaUpdate = Joi.object({
   name: Joi.string().alphanum().min(3).max(15),
   email: Joi.string().email(),
@@ -17,4 +19,4 @@ const schemaUpdateStatus = Joi.object({
   favorite: Joi.boolean().required(),
 });
 
-module.exports = {schema,schemaUpdate,schemaUpdateStatus}
+module.exports = {schema,schemaUpdate,schemaUpdateStatus }

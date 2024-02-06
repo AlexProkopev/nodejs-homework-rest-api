@@ -1,6 +1,7 @@
 require("dotenv").config();
-
+const { generateNanoId } = require("../helpers/generateId.js");
 const { handleErroreAuth } = require("../helpers/handleErrorAuth.js");
+const { sendEmail } = require("../helpers/senderEmail.js");
 const { User } = require("../models/users.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -10,20 +11,78 @@ const regist = async (req, res, next) => {
 
   try {
     const user = await User.findOne({ email });
+
     if (user) return res.status(409).json({ message: "User already exists" });
+
     const hashPassword = await bcrypt.hash(password, 10);
+    const verificationToken = generateNanoId();
+
     const userCreate = await User.create({
       ...req.body,
       name,
       password: hashPassword,
+      verificationToken,
     });
+    const verefyEmail = {
+      to: email,
+      subject: "Verefy email",
+      html: `<a target="" href="${process.env.BASE_URl}/api/users/verify/${verificationToken}">Click verefy email</a>`,
+    };
+
+    await sendEmail(verefyEmail);
+
     const response = {
       email: userCreate.email,
       subscription: userCreate.subscription,
     };
+
     res.status(201).json(response);
   } catch (error) {
     handleErroreAuth(error, req, res, next);
+  }
+};
+
+const verefyEmail = async (req, res, next) => {
+  const { verificationCode } = req.params;
+  try {
+    const user = await User.findOne({ verificationCode });
+    if (!user)
+      return res
+        .status(401)
+        .json({ message: "Verification code is not valid" });
+
+    await User.findByIdAndUpdate(user._id, {
+      verify: true,
+      verificationToken: "",
+    });
+    res.status(401).json({ message: "Verification code is valid" });
+  } catch (error) {
+    res.status(401).json({ message: "Not Verification" });
+  }
+};
+
+const resendVerefyEmail = async (req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(401).json({ message: "User not found" });
+    if (user.verify)
+      return res.status(401).json({ message: "User already verified" });
+    const verificationToken = generateNanoId();
+
+    const verefyEmail = {
+      to: email,
+      subject: "Verefy email",
+      html: `<a target="" href="${process.env.BASE_URl}/api/users/verify/${verificationToken}">Click verefy email</a>`,
+    };
+
+    await sendEmail(verefyEmail);
+
+    res.status(201).json({ message: "Verefy email sent" });
+  } catch (error) {
+    res.status(401).json({ message: "Not authorized" });
   }
 };
 
@@ -38,6 +97,8 @@ const login = async (req, res, next) => {
     if (!isMatch)
       return res.status(401).json({ message: "Password not corect" });
 
+    if (!user.verify)
+      return res.status(401).json({ message: "User not verified" });
     const payload = {
       id: user._id,
     };
@@ -68,7 +129,6 @@ const currentUser = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     res.status(401).json({ message: "Not authorized" });
-    
   }
 };
 
@@ -79,7 +139,13 @@ const logOut = async (req, res, next) => {
     res.status(204).json();
   } catch (error) {
     res.status(401).json({ message: "Not authorized" });
-    
   }
 };
-module.exports = { regist, login, currentUser, logOut };
+module.exports = {
+  regist,
+  login,
+  currentUser,
+  logOut,
+  verefyEmail,
+  resendVerefyEmail,
+};
