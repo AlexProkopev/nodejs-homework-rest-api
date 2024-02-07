@@ -55,7 +55,7 @@ const verefyEmail = async (req, res, next) => {
       verify: true,
       verificationToken: "",
     });
-    res.status(404).json({ message: "Verification code is valid" });
+    res.status(200).json({ message: "Verification code is valid" });
   } catch (error) {
     res.status(401).json({ message: "Not Verification" });
   }
